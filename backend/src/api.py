@@ -27,6 +27,9 @@ CORS(app)
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks', methods=['GET'])
+def app_get_drinks():
+    abort(501)
 
 
 '''
@@ -37,6 +40,10 @@ CORS(app)
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks-detail', methods=['GET'])
+@requires_auth('get:drinks-detail')
+def app_get_drinks_detail():
+    abort(501)
 
 
 '''
@@ -48,6 +55,10 @@ CORS(app)
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks', methods=['POST'])
+@requires_auth('post:drinks')
+def app_post_drinks():
+    abort(501)
 
 
 '''
@@ -61,6 +72,10 @@ CORS(app)
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks', methods=['PATCH'])
+@requires_auth('patch:drinks')
+def app_patch_drinks():
+    abort(501)
 
 
 '''
@@ -73,12 +88,12 @@ CORS(app)
     returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks/<id>', methods=['DELETE'])
+@requires_auth('delete:drinks')
+def app_delete_drinks():
+    abort(501)
 
 
-## Error Handling
-'''
-Example error handling for unprocessable entity
-'''
 @app.errorhandler(422)
 def unprocessable(error):
     return jsonify({
@@ -87,24 +102,30 @@ def unprocessable(error):
                     "message": "unprocessable"
                     }), 422
 
-'''
-@TODO implement error handlers using the @app.errorhandler(error) decorator
-    each error handler should return (with approprate messages):
-             jsonify({
-                    "success": False, 
+
+@app.errorhandler(501)
+def not_implemented(error):
+    return jsonify({
+                    "success": False,
+                    "error": 501,
+                    "message": "not implemented"
+                    }), 501
+
+
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({
+                    "success": False,
                     "error": 404,
-                    "message": "resource not found"
+                    "message": "not found"
                     }), 404
 
-'''
 
-'''
-@TODO implement error handler for 404
-    error handler should conform to general task above 
-'''
-
-
-'''
-@TODO implement error handler for AuthError
-    error handler should conform to general task above 
-'''
+@app.errorhandler(AuthError)
+def not_found(error):
+    # ToDo: revide if I need separate 401 and 403 or I can extract the status code from error
+    return jsonify({
+                    "success": False,
+                    "error": 501,
+                    "message": "not found"
+                    }), 501
