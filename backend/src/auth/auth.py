@@ -4,10 +4,9 @@ from functools import wraps
 from jose import jwt
 from urllib.request import urlopen
 
-
 AUTH0_DOMAIN = 'balazsszalai.auth0.com'
 ALGORITHMS = ['RS256']
-API_AUDIENCE = 'dev'
+API_AUDIENCE = 'https://balazs-coffe-shop'
 
 
 class AuthError(Exception):
@@ -18,22 +17,31 @@ class AuthError(Exception):
 
 def get_token_auth_header():
     if 'Authorization' not in request.headers:
-        raise AuthError()
+        raise AuthError({
+            'code': 'missing_header',
+            'description': 'Authorization not found in headers.'
+        }, 401)
     auth_header = request.headers['Authorization']
     header_parts = auth_header.split(' ')
     if len(header_parts) != 2:
-        raise AuthError()
+        raise AuthError({
+            'code': 'authorization_header_count_mismatch',
+            'description': 'Authorization section of headers should consist of 2 parts separated by a single space.'
+        }, 401)
     if header_parts[0].lower() != 'bearer':
-        raise AuthError()
+        raise AuthError({
+            'code': 'bearer_not_found',
+            'description': 'Expected first part of Authorization header to be bearer.'
+        }, 401)
     return header_parts[1]
 
 
 def check_permissions(permission, payload):
     if 'permissions' not in payload:
-                        raise AuthError({
-                            'code': 'invalid_claims',
-                            'description': 'Permissions not included in JWT.'
-                        }, 401)
+        raise AuthError({
+            'code': 'invalid_claims',
+            'description': 'Permissions not included in JWT.'
+        }, 401)
 
     if permission not in payload['permissions']:
         raise AuthError({
@@ -100,9 +108,9 @@ def verify_decode_jwt(token):
                 'description': 'Unable to parse authentication token.'
             }, 400)
     raise AuthError({
-                'code': 'invalid_header',
-                'description': 'Unable to find the appropriate key.'
-            }, 400)
+        'code': 'invalid_header',
+        'description': 'Unable to find the appropriate key.'
+    }, 400)
 
 
 def requires_auth(permission=''):
@@ -112,7 +120,8 @@ def requires_auth(permission=''):
             token = get_token_auth_header()
             payload = verify_decode_jwt(token)
             check_permissions(permission, payload)
-            return f(payload, *args, **kwargs)
+            return f(*args, **kwargs)
 
         return wrapper
+
     return requires_auth_decorator
