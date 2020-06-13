@@ -48,7 +48,7 @@ def app_post_drinks():
         abort(422)
     drink = Drink()
     drink.title = data['title']
-    drink.recipe = data['recipe']
+    drink.recipe = json.dumps(data['recipe'])
     drink.insert()
     return jsonify({
         'success': True,
@@ -58,19 +58,19 @@ def app_post_drinks():
 
 @app.route('/drinks/<id>', methods=['PATCH'])
 @requires_auth('patch:drinks')
-def app_patch_drinks(drink_id):
+def app_patch_drinks(id):
     data = request.json
-    if 'title' not in data:
-        abort(422)
-    if 'recipe' not in data:
+    if 'title' not in data and 'recipe' not in data:
         abort(422)
 
-    drink = Drink.query.get(drink_id)
+    drink = Drink.query.get(id)
     if drink is None:
         abort(404)
 
-    drink.title = data['title']
-    drink.recipe = data['recipe']
+    if 'title' in data:
+        drink.title = data['title']
+    if 'recipe' in data:
+        drink.recipe = json.dumps(data['recipe'])
 
     drink.update()
 
@@ -82,8 +82,8 @@ def app_patch_drinks(drink_id):
 
 @app.route('/drinks/<id>', methods=['DELETE'])
 @requires_auth('delete:drinks')
-def app_delete_drinks(drink_id):
-    drink = Drink.query.get(drink_id)
+def app_delete_drinks(id):
+    drink = Drink.query.get(id)
     if drink is None:
         abort(404)
 
@@ -91,7 +91,7 @@ def app_delete_drinks(drink_id):
 
     return jsonify({
         'success': True,
-        'drinks': drink_id
+        'drinks': id
     })
 
 
@@ -124,9 +124,8 @@ def not_found(error):
 
 @app.errorhandler(AuthError)
 def not_found(error):
-    # ToDo: revide if I need separate 401 and 403 or I can extract the status code from error
     return jsonify({
                     "success": False,
-                    "error": 501,
-                    "message": "not found"
-                    }), 501
+                    "error": error.status_code,
+                    "message": error.error['description']
+                    }), error.status_code
