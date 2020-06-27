@@ -8,10 +8,6 @@
 
 Follow instructions to install the latest version of python for your platform in the [python docs](https://docs.python.org/3/using/unix.html#getting-and-installing-the-latest-version-of-python)
 
-#### Virtual Enviornment
-
-We recommend working within a virtual environment whenever using Python for projects. This keeps your dependencies for each project separate and organaized. Instructions for setting up a virual enviornment for your platform can be found in the [python docs](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/)
-
 #### PIP Dependencies
 
 Once you have your virtual environment setup and running, install dependencies by naviging to the `/backend` directory and running:
@@ -48,38 +44,169 @@ flask run --reload
 
 The `--reload` flag will detect file changes and restart the server automatically.
 
-## Tasks
 
-### Setup Auth0
+## API description
 
-1. Create a new Auth0 Account
-2. Select a unique tenant domain
-3. Create a new, single page web application
-4. Create a new API
-    - in API Settings:
-        - Enable RBAC
-        - Enable Add Permissions in the Access Token
-5. Create new API permissions:
-    - `get:drinks-detail`
-    - `post:drinks`
-    - `patch:drinks`
-    - `delete:drinks`
-6. Create new roles for:
-    - Barista
-        - can `get:drinks-detail`
-    - Manager
-        - can perform all actions
-7. Test your endpoints with [Postman](https://getpostman.com). 
-    - Register 2 users - assign the Barista role to one and Manager role to the other.
-    - Sign into each account and make note of the JWT.
-    - Import the postman collection `./starter_code/backend/udacity-fsnd-udaspicelatte.postman_collection.json`
-    - Right-clicking the collection folder for barista and manager, navigate to the authorization tab, and including the JWT in the token field (you should have noted these JWTs).
-    - Run the collection and correct any errors.
-    - Export the collection overwriting the one we've included so that we have your proper JWTs during review!
+#### Endpoints
 
-### Implement The Server
+1. GET '/drinks'
+2. POST '/drinks'
+3. GET '/drinks-detail'
+4. PATCH '/drinks/<id>'
+5. DELETE '/drinks/<id>'
 
-There are `@TODO` comments throughout the `./backend/src`. We recommend tackling the files in order and from top to bottom:
+#### GET '/drinks'
 
-1. `./src/auth/auth.py`
-2. `./src/api.py`
+Description: Get the list of registered drinks with a short description for visualization.
+
+Parameters: None
+
+Expected result:
+```json
+{
+    "success": true,
+    "drinks": 
+    [
+        {
+            "id": 0,
+            "title": "drink name",
+            "recipe": 
+            [
+                {
+                    "color": "ingredient color",
+                    "parts": 1
+                }
+            ]
+        }
+    ]
+}
+```
+
+Errors: None
+
+#### POST '/drinks'
+
+Description: Adds a new recipe to the database.
+
+Parameters: 
+1. title: 
+    - String
+    - Name of the new drink
+    - Required:
+2. recipe: 
+    - String
+    - List of ingredients to make the drink
+    - Required
+
+Expected result:
+```json
+{
+    "success": true,
+    "drinks": 
+    [
+        {
+            "id": 0,
+            "title": "new drink name",
+            "recipe": 
+            [
+                {
+                    "name": "ingredient name",
+                    "color": "ingredient color",
+                    "parts": 1
+                }
+            ]
+        }
+    ]
+}
+```
+
+Errors: 
+1. Missing required parameter: ERROR 422
+
+#### GET '/drinks-detail'
+
+Description: Get the list of registered drinks with a list of ingredients.
+
+Parameters: None
+
+Expected result:
+```json
+{
+    "success": true,
+    "drinks": 
+    [
+        {
+            "id": 0,
+            "title": "drink name",
+            "recipe": 
+            [
+                {
+                    "name": "ingredient name",
+                    "color": "ingredient color",
+                    "parts": 1
+                }
+            ]
+        }
+    ]
+}
+```
+
+Errors: None
+
+#### PATCH '/drinks/<id>'
+
+Description: Updates the name or the recipe of an existing drink.
+
+Parameters:
+1. title: 
+    - String
+    - Name of the new drink
+    - Optional 
+2. recipe: 
+    - String
+    - List of ingredients to make the drink
+    - Optional
+Note: Required at least 1 parameter
+
+Expected result:
+```json
+{
+    "success": true,
+    "drinks": 
+    [
+        {
+            "id": 0,
+            "title": "updated drink name",
+            "recipe": 
+            [
+                {
+                    "name": "ingredient name",
+                    "color": "ingredient color",
+                    "parts": 1
+                }
+            ]
+        }
+    ]
+}
+```
+
+Errors: 
+1. No parameter provided: ERROR 422
+2. ID does not exist in database: ERROR 404
+
+#### DELETE '/drinks/<id>'
+
+Description: Updates the name or the recipe of an existing drink.
+
+Parameters: None
+
+Expected result:
+```json
+{
+    "success": true,
+    "drinks": 1
+}
+```
+
+Errors: 
+1. ID does not exist in database: ERROR 404
